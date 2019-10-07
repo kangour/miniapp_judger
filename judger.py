@@ -70,6 +70,26 @@ class Judger:
         records = re.findall(r'\n(.*?):', _records)
         return records
 
+    def variables_from_js(self, content):
+        records = []
+        records += re.findall(r'variables:(.*?),\n\n', content, re.DOTALL)
+        if len(records) == 0:
+            return records
+        records = records[0]
+        records = re.sub(' ', '', records)
+        records = re.sub('"', "'", records)
+        _records = ''
+        a = 0
+        for i in records:
+            if i == '{' or i == '[':
+                a += 1
+            if a <= 1:
+                _records += i
+            elif i == '}' or i == ']':
+                a -= 1
+        records = re.findall(r'\n(.*?):', _records)
+        return records
+
     def class_from_wxml(self, content):
         records = re.findall(r" class='(.*?)'", content)
         records += re.findall(r' class="(.*?)"', content)
@@ -147,6 +167,7 @@ class Judger:
                     wxml_tag = self.tag_from_wxml(wxml_content)
                     wxml_class = self.class_from_wxml(wxml_content)
                     wxss_class = self.class_from_wxss(wxss_content)
+                    js_variables = self.variables_from_js(js_content)
                     #  wxml_id = self.id_from_wxml(wxml)
                     #  wxss_id = self.id_from_wxss(wxss)
                     #  js_id = self.id_from_js(js)
@@ -159,10 +180,13 @@ class Judger:
                     #  print('wxss tag:', wxml_tag)
                     self.all_wxml_class += wxml_class
                     self.all_wxml_tag += wxml_tag
+                    for i in js_variables:
+                        if 'variables.%s' % i not in js_content:
+                            print('js variables 冗余变量:', i, '位于', wxml)
                     for i in js_data:
                         #  print(i)
                         if i not in wxml_content:
-                            print('DATA  未渲染:', i, '位于', wxml)
+                            print('存在未渲染的 data 变量:', i, '位于', wxml)
                     for i in wxss_class:
                         is_match = False
                         for j in wxml_class:
@@ -224,7 +248,7 @@ class Judger:
                     is_match = True
                     break
             if is_match is False:
-                print('IMG 冗余的图片:', i)
+                print('image 存在冗余的图片:', i)
 
     def checker(self):
         self.check_single_page(self.project_path)
