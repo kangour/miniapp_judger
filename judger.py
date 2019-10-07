@@ -127,6 +127,8 @@ class Judger:
                 res.append(i[1:])
             elif i.endswith(','):
                 res.append(i[:-1])
+            elif '[' in i:
+                res.append(i.split('[')[0])
             elif ':' in i:
                 res.append(i.split(':')[0])
             else:
@@ -182,11 +184,11 @@ class Judger:
                     self.all_wxml_tag += wxml_tag
                     for i in js_variables:
                         if 'variables.%s' % i not in js_content:
-                            print('js variables 冗余变量:', i, '位于', wxml)
+                            print('冗余变量:', i, '位于 js variables', wxml)
                     for i in js_data:
                         #  print(i)
                         if i not in wxml_content:
-                            print('存在未渲染的 data 变量:', i, '位于', wxml)
+                            print('未渲染的变量:', i, '位于 js data', wxml)
                     for i in wxss_class:
                         is_match = False
                         for j in wxml_class:
@@ -194,7 +196,7 @@ class Judger:
                                 is_match = True
                                 break
                         if is_match is False and i not in wxml_tag:
-                            print('多余的页面样式:', i, '位于', wxml)
+                            print('冗余页面样式:', i, '位于', wxml)
                             for tag in wxml_class:
                                 if i in tag:
                                     print('参考', wxml, tag)
@@ -226,7 +228,7 @@ class Judger:
                     is_match = True
                     break
             if is_match is False and i not in self.all_wxml_tag:
-                print('多余的全局样式:', i)
+                print('冗余全局样式:', i)
 
     def get_images(self, path):
         _list = os.listdir(path)
@@ -248,7 +250,7 @@ class Judger:
                     is_match = True
                     break
             if is_match is False:
-                print('image 存在冗余的图片:', i)
+                print('冗余图片:', i)
 
     def checker(self):
         self.check_single_page(self.project_path)
