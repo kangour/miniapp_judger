@@ -256,6 +256,7 @@ class Judger:
         self.check_single_page(self.project_path)
         self.check_global_class(self.project_path)
         self.check_image(self.image_path)
+        print('检查完毕')
 
 
 print()
